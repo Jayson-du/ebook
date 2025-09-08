@@ -1,0 +1,100 @@
+Gallium3D 是 Mesa3D 图形库的一部分，是一个模块化、可扩展的 3D 图形驱动架构，旨在简化 OpenGL 和 Vulkan 等 API 的实现，同时提供更好的代码复用和硬件抽象。Gallium3D 使得开发新的 GPU 驱动程序更加容易，并提高了不同 API 之间的兼容性。
+
+1. Gallium3D 的设计目标
+Gallium3D 的主要设计目标包括：
+
+硬件抽象：提供一个统一的 API，避免开发者直接处理硬件特性，使得不同的 GPU 可以共享相同的代码。
+代码复用：通过公共的编译管线、中间表示（IR）和优化器，不同的 GPU 供应商可以共享大量的代码。
+多 API 兼容：使 OpenGL、OpenCL、Vulkan、Direct3D 等多个 API 可以使用相同的底层驱动。
+简化驱动开发：降低开发者的维护成本，使得开发新的 GPU 驱动更容易。
+2. Gallium3D 的架构
+Gallium3D 采用了一种层次化的驱动架构，主要由以下几个关键部分组成：
+
+2.1 State Tracker（状态跟踪器）
+State Tracker 负责实现高层 API，例如：
+
+OpenGL（由 st/mesa 组件实现）
+OpenCL（由 Clover 组件实现）
+Vulkan（部分使用 Gallium3D，但主要由独立的 Mesa 驱动实现）
+Direct3D 9（通过 Nine 实现）
+State Tracker 的作用是将 API 调用转换为 Gallium3D 统一的管线操作，并将这些操作传递给驱动。
+
+2.2 Gallium Driver（Gallium 驱动）
+Gallium3D 提供了一组通用的 GPU 抽象接口，所有 GPU 供应商可以通过实现这些接口来编写自己的驱动程序。Gallium 驱动通常包括：
+
+硬件驱动（Hardware Driver）：如 radeonsi（AMD）、nouveau（NVIDIA）、iris（Intel）、panfrost（ARM Mali）等。
+软件驱动（Software Driver）：如 llvmpipe（基于 LLVM 的 CPU 渲染器）和 softpipe（纯 C 语言的 CPU 渲染器）。
+这些驱动程序实现 Gallium3D 提供的接口，并最终与 GPU 进行通信。
+
+2.3 Pipe Interface（管线接口）
+Gallium3D 定义了一套标准的管线接口，使不同的硬件驱动可以复用相同的 API。这些接口包括：
+
+Pipe Context：管理 GPU 状态和命令提交。
+Pipe Screen：提供 GPU 信息查询、资源创建等功能。
+Pipe Resource：管理 GPU 资源（如纹理、缓冲区）。
+Pipe Sampler：封装采样器状态，如纹理过滤、寻址模式等。
+Pipe Query：用于实现性能计数器和调试查询。
+所有 Gallium3D 驱动必须实现这些接口，以提供对不同 GPU 的支持。
+
+2.4 中间表示（IR）和优化
+Gallium3D 使用多个中间表示（IR）来进行优化和代码生成：
+
+TGSI（Tungsten Graphics Shader IR）：早期的 Gallium3D 着色器中间表示，现在逐渐被 NIR 取代。
+NIR（New Intermediate Representation）：更高级的着色器中间表示，广泛用于现代 Mesa 驱动。
+LLVM IR：用于 llvmpipe（软件渲染器）以及部分 GPU 驱动（如 radeonsi）。
+这些中间表示用于优化和转换着色器代码，并最终编译为 GPU 可以执行的机器代码。
+
+3. Gallium3D 典型的工作流程
+当应用程序使用 OpenGL 或 Vulkan 进行绘图时，Gallium3D 的工作流程如下：
+
+API 调用：
+
+例如，应用程序调用 glDrawElements()。
+State Tracker 处理：
+
+OpenGL State Tracker（st/mesa）将 OpenGL 状态转换为 Gallium3D 统一管线的操作。
+管线处理：
+
+Gallium3D 的 Pipe Interface 解析绘图命令，并将其转换为硬件指令。
+着色器编译：
+
+着色器代码通过 NIR 或 LLVM 进行优化，并转换为 GPU 可执行的机器代码。
+驱动程序执行：
+
+Gallium 驱动（如 radeonsi 或 nouveau）最终与 GPU 交互，执行渲染任务。
+结果输出：
+
+GPU 完成渲染，并将结果写入帧缓冲区，最终呈现在屏幕上。
+4. Gallium3D 的主要驱动
+目前，Gallium3D 支持多个硬件驱动，包括：
+
+AMD：radeonsi（基于 Gallium3D 的现代 AMD 驱动）
+Intel：iris（适用于 Gen8+ GPU），但 i965（老 Intel 驱动）不使用 Gallium3D
+NVIDIA：nouveau（开源 NVIDIA 驱动）
+Qualcomm：freedreno（适用于 Adreno GPU）
+ARM：panfrost（适用于 Mali GPU）
+软件渲染：llvmpipe（基于 LLVM 的软件渲染器）
+5. Gallium3D 的优缺点
+优点
+驱动复用性高：多个 GPU 供应商可以共享相同的 State Tracker 和优化器。
+API 兼容性强：支持 OpenGL、OpenCL、Direct3D 等多个 API。
+代码结构清晰：比传统 Mesa 旧架构（如 i965）更易维护和扩展。
+支持软件渲染：llvmpipe 提供高性能的软件 OpenGL 实现。
+缺点
+不适用于所有 GPU：部分现代 GPU（如 Intel Vulkan 驱动 ANV）不使用 Gallium3D。
+某些优化不足：相比于专用的厂商驱动，性能可能有所欠缺，特别是在 Vulkan 方面。
+维护难度：需要维护多个中间表示（TGSI、NIR、LLVM IR），增加了复杂性。
+6. Gallium3D 与 Mesa 关系
+Gallium3D 是 Mesa3D 的一个子系统，它主要负责 OpenGL 和部分 OpenCL 的实现。而 Mesa 还包括：
+
+Vulkan 驱动（如 RADV、ANV）——部分使用 NIR，但不直接使用 Gallium3D。
+传统 Mesa 驱动（如 i965）——不使用 Gallium3D。
+7. 总结
+Gallium3D 是 Mesa3D 的核心组件，它通过模块化设计简化了 GPU 驱动的开发，并提供了高效的硬件抽象。其主要特点包括：
+
+State Tracker 处理不同的 API（OpenGL、OpenCL、Direct3D）
+Gallium Pipe Interface 统一 GPU 操作
+NIR/LLVM IR 进行着色器优化
+支持 AMD、NVIDIA、Intel、ARM 等 GPU
+提高代码复用性，减少驱动开发工作量
+Gallium3D 在 Mesa 生态系统中起到了关键作用，使得开源图形驱动的开发更加高效和灵活。

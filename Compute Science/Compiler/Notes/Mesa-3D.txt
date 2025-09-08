@@ -1,0 +1,41 @@
+Mesa 3D 是一个复杂的开源 3D 图形库，实现了多个图形 API（如 OpenGL 和 Vulkan），并支持多种硬件加速器。它的架构设计主要包括以下几个关键组件：
+
+1. 核心库 (Core Library)
+Mesa 3D 的核心库实现了图形 API 的核心功能，如 OpenGL、Vulkan 等。它提供了图形渲染的基础设施，包括上下文管理、状态管理和命令处理等。
+
+2. 硬件驱动 (Hardware Drivers)
+Mesa 3D 支持多种 GPU 硬件，提供了不同硬件的驱动程序。硬件驱动负责将图形 API 的调用转换为具体硬件的指令集。常见的硬件驱动包括：
+
+i915/i965: Intel GPU 驱动
+r300/r600/radeonsi: AMD GPU 驱动
+nouveau: NVIDIA 开源 GPU 驱动
+3. 状态追踪器 (State Trackers)
+状态追踪器负责维护图形渲染的状态，并将高级的图形 API 调用转换为低级别的硬件指令。包括：
+
+Gallium3D State Trackers: 用于支持多个 API，如 OpenGL、OpenGL ES 和 Vulkan。
+4. 编译器 (Compilers)
+Mesa 3D 包含多个编译器，用于将着色器代码编译为硬件可以执行的二进制代码。常见的编译器包括：
+
+GLSL 编译器: 用于编译 OpenGL 着色器语言 (GLSL)。
+SPIR-V 编译器: 用于编译 Vulkan 着色器。
+5. 软件渲染器 (Software Renderer)
+在没有硬件加速的情况下，Mesa 3D 提供了软件渲染器进行图形处理。软件渲染器使用 CPU 进行图形渲染，适用于没有 GPU 的设备。常见的实现包括：
+
+swrast: 经典的软渲染器。
+llvmpipe: 基于 LLVM 的高性能软渲染器。
+softpipe: 简单的软件渲染器。
+6. 工具和实用程序 (Tools and Utilities)
+Mesa 3D 提供了一些工具和实用程序，用于调试、测试和优化图形渲染。包括调试器、性能分析工具等。
+
+7. Gallium3D 框架
+Gallium3D 是 Mesa 3D 的一个子系统，旨在简化图形驱动程序的开发。它将硬件驱动和状态追踪器分开，使得图形 API 和硬件驱动之间的耦合度降低。Gallium3D 的主要组件包括：
+
+Pipe Driver Interface: 定义了硬件驱动程序的接口。
+State Trackers: 实现了不同图形 API 的支持。
+Auxiliary Modules: 提供了通用的工具和功能，如缓冲区管理、纹理处理等。
+文档和资源
+为了更详细地了解 Mesa 3D 的架构设计，可以参考以下资源：
+
+Mesa 3D 官方文档
+Mesa 3D GitHub 仓库
+这些资源提供了深入的架构文档、开发指南和社区贡献指南，有助于更好地理解 Mesa 3D 的内部实现。

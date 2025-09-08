@@ -1,0 +1,34 @@
+LLVM的SelectionDAG概念
+LLVM的SelectionDAG（Selection Directed Acyclic Graph）是LLVM编译器基础设施中的一个关键组件，用于在代码生成过程中表示和优化指令选择的中间表示。SelectionDAG在代码生成的后端阶段起作用，将中间表示（IR）转换为目标机器代码。以下是SelectionDAG的主要概念和功能：
+
+1. DAG（有向无环图）
+SelectionDAG使用有向无环图（DAG）来表示指令选择和调度。每个节点表示一个操作或者指令，每条边表示操作之间的数据依赖关系。DAG的无环性质确保了没有循环依赖，从而能够有效地进行指令调度和优化。
+
+2. SDNode（SelectionDAG节点）
+SelectionDAG中的每个节点称为SDNode，表示一个操作或指令。SDNode包含操作代码（Opcode）、操作数和类型信息。常见的SDNode类型包括常量、加载、存储、算术运算等。
+
+3. SDValue（SelectionDAG值）
+SDValue是对SDNode的引用，表示SelectionDAG中的一个值。SDValue包含指向SDNode的指针以及操作数的索引，用于在DAG中表示数据流和依赖关系。
+
+4. 指令选择（Instruction Selection）
+指令选择是将中间表示（IR）转换为目标机器指令的过程。SelectionDAG通过模式匹配将IR中的操作转换为目标机器的指令。LLVM使用TableGen工具生成模式匹配规则，指导指令选择过程。
+
+5. DAGCombine（DAG合并）
+DAGCombine是SelectionDAG中的优化过程，通过合并和简化DAG中的节点来提高代码生成的效率。DAGCombine通过识别和应用各种优化模式，减少不必要的操作和冗余指令。
+
+6. 目标特定DAG（Target-specific DAG）
+在代码生成过程中，SelectionDAG会根据目标机器的特性生成目标特定的DAG。目标特定DAG包含与目标机器指令集相关的节点和操作，确保生成的代码能够高效地在目标机器上执行。
+
+ARM GPU的FAU（Fixed Address Unit）
+在LLVM的SelectionDAG框架中，针对ARM GPU的FAU（Fixed Address Unit）实现涉及到一些特定的指令选择和优化步骤。FAU用于处理固定地址的访问，例如常量加载和固定内存地址的访问。以下是一些与ARM GPU的FAU相关的内容：
+
+1. 指令选择
+LLVM的SelectionDAG框架通过模式匹配将中间表示中的固定地址访问操作转换为ARM GPU的特定指令。例如，常量加载操作可能会被转换为加载常量寄存器的指令。
+
+2. 优化
+DAGCombine过程可以识别和优化固定地址访问操作。例如，如果多个操作访问相同的固定地址，DAGCombine可以合并这些操作，减少指令数量。
+
+3. 目标特定实现
+ARM GPU的FAU实现可能包含在目标特定的DAG中，例如在ARMSelectionDAGInfo和ARMISelDAGToDAG中。这些文件包含了ARM GPU特定的指令选择和优化逻辑。
+
+以下是一些相关的代码片段和文件路径，展示了LLVM中ARM GPU的FAU实现：
